@@ -3,6 +3,7 @@ package biblioteca;
 public class Utente {
     private String name;
     private int nMaxPrest;
+    private int nInPrestito;
     private int durata;
     
     public String getName() {
@@ -34,6 +35,22 @@ public class Utente {
 	this.name = name;
 	this.nMaxPrest = nMaxPrest;
 	this.durata = durata;
+    }
+    
+    public void userReturnsBook() {
+    	if (nInPrestito != 0) nInPrestito--;
+    }
+
+    public void userBorrowsBook() {
+    	if (nInPrestito < nMaxPrest) nInPrestito++;
+    }
+    
+    public boolean userCanBorrow() {
+    	return nInPrestito < nMaxPrest;
+    }
+    
+    public boolean userHasBooks() {
+    	return nInPrestito > 0;
     }
     
     

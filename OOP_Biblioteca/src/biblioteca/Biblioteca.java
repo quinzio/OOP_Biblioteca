@@ -9,7 +9,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Biblioteca {
 	private Map<String, Libro> libri = new TreeMap<>();
@@ -20,6 +23,7 @@ public class Biblioteca {
 
 	public void addLibro(String titolo, int nVolumi, String... autori)
 			throws BiblioEccezione {
+		if (libri.containsKey(titolo)) throw new BiblioEccezione("Libro gia' presente.");
 		Libro l = new Libro(titolo, nVolumi, autori);
 		libri.put(titolo, l);
 		int i;
@@ -88,19 +92,45 @@ public class Biblioteca {
 	}
 
 	public SortedMap<String, Long> nPrestitiXTitolo() {
-		return null;
+		return 
+				prestiti
+				.stream()
+				.collect(Collectors.groupingBy(p -> p.getTitolo(), TreeMap::new, Collectors.counting()));
 	}
 
 	public SortedMap<Long, Set<String>> titoliXnPrestiti() {
-		return null;
+		return 
+				prestiti
+				.stream()
+				.collect(Collectors.groupingBy(p -> p.getTitolo(), TreeMap::new, Collectors.counting()))
+				.entrySet()
+				.stream()
+				.collect(Collectors.groupingBy(
+						e -> e.getValue(), 
+						TreeMap::new, 
+						Collectors.mapping(e -> e.getKey(), Collectors.toCollection(TreeSet::new)))
+				);
 	}
 
 	public List<InfoI> utentiNPrestiti() {
-		return null;
+		return 
+				prestiti.stream()
+				.collect(Collectors.groupingBy(p -> p.getNomeUtente(), Collectors.counting()))
+				.entrySet()
+				.stream()
+				.map(e -> {return new Info(e.getKey(), e.getValue());})
+				.collect(Collectors.toList());
 	}
 
 	public List<InfoI> autoriNPrestiti() {
-		return null;
+		return 
+				prestiti.stream()
+				.map(p -> libri.get(p.getTitolo()).getAutori())
+				.<String>flatMap(autori -> Stream.of(autori))
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+				.entrySet()
+				.stream()
+				.map(e -> {return new Info(e.getKey(), e.getValue());})
+				.collect(Collectors.toList());
 	}
-
 }
